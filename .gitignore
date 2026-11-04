@@ -147,3 +147,11 @@ vite.config.ts.timestamp-*
 
 # Turbo Repo
 .turbo
+
+# Playwright and generated BDD artifacts
+.features-gen/
+playwright-report/
+test-results/
+junit-report/
+blob-report/
+playwright/.cache/
