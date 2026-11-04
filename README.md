@@ -1,60 +1,98 @@
-# QA automation assessment
+# QA Automation Assessment
 
-Playwright, TypeScript ES modules, and BDD for Catfact Ninja API testing and Swag Labs browser testing.
+Task 4 automates Swag Labs at https://www.saucedemo.com using Playwright BDD, TypeScript, and Page Object Models. Task 3 is tested separately in Postman; its collection and screenshots are retained for submission.
 
-## Status
+## Prerequisites
 
-Framework configuration and folder structure are ready. Assessment scenarios, services, and page objects have not been implemented yet. An empty suite is not a passing assessment.
+- Node.js 24 or newer, with npm. The suite has been verified with Node.js 26.4.0 and npm 11.17.0.
+- Git and internet access to Swag Labs.
+- Chromium installed through Playwright, as shown below.
 
-## Setup (PowerShell)
+Run `node --version` and `npm --version` to check your installation.
 
-Install a Node.js version supported by the installed Playwright release, plus Git.
+## Setup
+
+Run these commands in PowerShell:
 
 ```powershell
 git clone https://github.com/Jason-Barron07/qa-automation-assessment.git
 Set-Location qa-automation-assessment
 npm ci
 npx playwright install chromium
-Copy-Item .env.example .env
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
 ```
 
-Fill in the public Swag Labs demo credentials in `.env` before implementing login coverage. `.env` is ignored by Git. Public target URLs have defaults and can be overridden through environment variables. Existing process environment variables take precedence over `.env`.
+Open `.env` and set `SWAG_USERNAME` to the standard demo account listed on the Swag Labs login page. Set `SWAG_PASSWORD` to the demo password displayed there. Do not use the locked or problem accounts for the successful journey. The negative scenarios supply their own deliberately invalid inputs.
 
-## Commands
+`.env` is ignored by Git. Keep credentials there rather than in feature files or committed configuration. The existing local environment is preserved by the setup command.
+
+Public defaults, including `UI_BASE_URL`, timeouts, and worker count, are in `.env.qa`. Configuration is loaded in this order: existing process variables, `.env`, then `.env.<TARGET_ENVIRONMENT>` (default: `qa`). Local runs use one worker with no retries; CI allows the configured retry count.
+
+## Execute the tests
+
+Run the checks and complete UI suite from the repository root:
 
 ```powershell
 npm run typecheck
-npm run bddgen
-npm run test:list
-npm run test:api
+npm run lint
 npm run test:ui
-npm run test:ui -- --headed
-npm test
-npm run report
 ```
 
-Each test command regenerates BDD specs first. Until scenarios are added, ordinary test commands report no tests; use `npm run test:list -- --pass-with-no-tests` only to check empty-framework discovery. Do not use that option as an assessment completion check.
+`npm test` also runs the complete UI suite. Both commands generate Playwright specs from the feature file before execution. A successful full run reports **20 passed**; failed assertions cause a nonzero exit code.
 
-## Structure
+| Purpose | Command |
+| --- | --- |
+| List all scenarios without running them | `npm run test:list` |
+| Run with the browser visible | `npm run test:ui -- --headed` |
+| Run sorting scenarios | `npm run test:ui -- --grep "Sort all products"` |
+| Run rejection scenarios | `npm run test:ui -- --grep "Reject"` |
+| Run purchase confirmation | `npm run test:ui -- --grep "Complete a purchase"` |
+| Open the latest HTML report | `npm run report` |
+| Regenerate BDD specs only | `npm run bddgen` |
 
-- `src/services/`: API clients, with HTTP implementation outside step definitions.
-- `src/pages/`: browser Page Object Models.
-- `src/components/`: UI components shared across pages.
-- `src/helpers/`: helpers with demonstrated reuse.
-- `tests/api/cat-facts/`: Catfact feature families.
-- `tests/ui/login/`, `sorting/`, `cart/`, `checkout/`: Swag Labs feature families.
-- `tests/api/api.fixture.ts` and `tests/ui/ui.fixture.ts`: separate BDD test entry points.
-- `docs/`: test plan, traceability, assumptions, execution evidence, and final written answers.
-- `.features-gen/api/` and `.features-gen/ui/`: generated specs; never edit or commit.
+## Coverage
 
-## Adding coverage
+The 20 independent scenarios cover valid login, five invalid-login cases, all four sort options, adding all products, cart count and total, valid checkout information, three missing-field cases, checkout item total and tax, purchase confirmation, return to Products, empty cart, and logout.
 
-Keep each feature's `.feature`, `.steps.ts`, `.fixture.ts`, `.types.ts`, and `.data.json` together; API features also use `.schema.ts` for Zod response contracts. Use `createBdd(test)` with the matching suite fixture import. Extend the suite's test instance as services/page objects are introduced and retain that instance in its steps. Avoid mixing API and UI step discovery.
+Every scenario has one Given, one When, and one Then. There are no tags or Examples tables. Each scenario starts in a fresh browser context and establishes its own prerequisites through page objects.
 
-Use `.js` extensions in relative TypeScript imports, explicit parameter/return types, Allman braces, single quotes, and semicolons. Keep scenarios independent; use fresh browser contexts and condition-based waits. Tests may import `src`; `src` must not import tests.
+The cart does not display a subtotal. Its line-item sum is checked before checkout and compared with the item total on the checkout overview. Money calculations use integer cents, and the tests do not assume a tax rate or fixed inventory total.
 
-## Reports
+See [requirement coverage](docs/task-4-test-plan.md), [BDD conventions](docs/task-4-bdd-alignment.md), and [recorded execution results](docs/task-4-execution-summary.md).
 
-HTML: `playwright-report/`; JUnit: `junit-report/results.xml`; failure artifacts: `test-results/`. Traces are retained on failures and screenshots captured for browser failures. One worker limits traffic to public targets; CI permits one retry and forbids focused tests. Report retries/flaky outcomes honestly.
+## Project structure
 
-The assessment framework adopts relevant Treasury conventions without its Azure Key Vault, transaction preparation, or internal reporting integrations. ESLint rules and actual assessment coverage are future steps; this setup supplies a TypeScript check, not a lint command.
+```text
+src/
+  components/       Shared cart and burger-menu controls
+  config/           Environment loading and configuration types
+  fixtures/         ui.fixture.ts and ui.types.ts
+  helpers/          Money conversion
+  pages/            Login, products, cart, and checkout page objects
+tests/ui/swag-labs/ Feature, steps, JSON test data, and feature types
+docs/              Coverage, execution evidence, and Postman collection
+.vscode/           TypeScript and Cucumber editor configuration
+```
+
+Shared fixtures create the page objects, load credentials, and isolate basket state. Assertions live in the steps file; browser actions live in page objects. Test inputs and expected messages live in JSON. TypeScript checks unused variables and parameters, and ESLint enforces the project conventions.
+
+Do not edit `.features-gen/` directly; it is regenerated and ignored by Git.
+
+## Reports and evidence
+
+- HTML report: `playwright-report/`, opened using `npm run report`.
+- JUnit report: `junit-report/results.xml` for machine-readable results.
+- Failure screenshots and traces: `test-results/`.
+- The cart-review scenario attaches its products and calculated total as `cart-total` evidence.
+
+Reports are generated locally, ignored by Git, and replaced by later runs. Open a failure trace from the HTML report or use `npx playwright show-trace "path/to/trace.zip"`.
+
+Task 3 material remains in `docs/reference/cat-facts.postman_collection.json` and `Postman collection - Cat API/`. No Cat Facts automation runs in this repository.
+
+## Troubleshooting
+
+- **Missing credentials:** set both Swag Labs variables in `.env`.
+- **Browser executable missing:** run `npx playwright install chromium`.
+- **Undefined Gherkin steps in VS Code:** open this repository as the workspace so `.vscode/settings.json` is loaded, then use **Developer: Reload Window** if needed.
+- **Editor errors while the compiler passes:** check for unsaved old tabs. Shared fixtures now live in `src/fixtures/`; close obsolete `tests/ui/ui.fixture.ts` and `ui.types.ts` tabs without saving them back into the old location. Use the workspace TypeScript version.
+- **Network or application failures:** inspect the HTML report and failure trace. Do not skip assertions to turn a failed run green.

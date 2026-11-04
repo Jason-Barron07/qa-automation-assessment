@@ -1,0 +1,80 @@
+{
+  "productsTitle": "Products",
+  "completePageTitle": "Checkout: Complete!",
+  "successTitle": "Thank you for your order!",
+  "successMessage": "Your order has been dispatched, and will arrive just as fast as the pony can get there!",
+  "checkout": {
+    "firstName": "Test",
+    "lastName": "Shopper",
+    "postalCode": "8001"
+  },
+  "loginCases": {
+    "unknown-user": {
+      "username": "unknown_assessment_user",
+      "password": "use-valid-password",
+      "error": "Epic sadface: Username and password do not match any user in this service"
+    },
+    "wrong-password": {
+      "username": "use-valid-user",
+      "password": "incorrect_password",
+      "error": "Epic sadface: Username and password do not match any user in this service"
+    },
+    "locked-user": {
+      "username": "locked_out_user",
+      "password": "use-valid-password",
+      "error": "Epic sadface: Sorry, this user has been locked out."
+    },
+    "missing-username": {
+      "username": "",
+      "password": "use-valid-password",
+      "error": "Epic sadface: Username is required"
+    },
+    "missing-password": {
+      "username": "use-valid-user",
+      "password": "",
+      "error": "Epic sadface: Password is required"
+    }
+  },
+  "sorts": {
+    "az": {
+      "label": "Name (A to Z)",
+      "field": "name",
+      "descending": false
+    },
+    "za": {
+      "label": "Name (Z to A)",
+      "field": "name",
+      "descending": true
+    },
+    "lohi": {
+      "label": "Price (low to high)",
+      "field": "price",
+      "descending": false
+    },
+    "hilo": {
+      "label": "Price (high to low)",
+      "field": "price",
+      "descending": true
+    }
+  },
+  "checkoutCases": {
+    "missing-first-name": {
+      "firstName": "",
+      "lastName": "Shopper",
+      "postalCode": "8001",
+      "error": "Error: First Name is required"
+    },
+    "missing-last-name": {
+      "firstName": "Test",
+      "lastName": "",
+      "postalCode": "8001",
+      "error": "Error: Last Name is required"
+    },
+    "missing-postal-code": {
+      "firstName": "Test",
+      "lastName": "Shopper",
+      "postalCode": "",
+      "error": "Error: Postal Code is required"
+    }
+  }
+}

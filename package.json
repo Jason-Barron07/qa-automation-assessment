@@ -1,15 +1,16 @@
 {
   "name": "qa-automation-assessment",
   "version": "1.0.0",
-  "description": "QA automation assessment using Playwright, TypeScript, and BDD. End-to-end testing with Page Object Models, data-driven scenarios, and test documentation.",
+  "description": "Task 4 Swag Labs UI automation using Playwright, TypeScript, BDD, and Page Object Models.",
   "scripts": {
     "bddgen": "bddgen",
     "test": "bddgen && playwright test",
-    "test:api": "bddgen && playwright test --project=api",
     "test:ui": "bddgen && playwright test --project=ui-chromium",
     "test:list": "bddgen && playwright test --list",
     "typecheck": "tsc --noEmit",
-    "report": "playwright show-report"
+    "report": "playwright show-report",
+    "lint": "eslint . --max-warnings=0",
+    "lint:fix": "eslint . --fix"
   },
   "repository": {
     "type": "git",
@@ -24,11 +25,15 @@
   },
   "homepage": "https://github.com/Jason-Barron07/qa-automation-assessment#readme",
   "devDependencies": {
+    "@eslint/js": "^10.0.1",
     "@playwright/test": "^1.64.1",
+    "@stylistic/eslint-plugin": "^5.10.0",
     "@types/node": "^26.6.6",
     "dotenv": "^18.0.9",
+    "eslint": "^10.14.0",
+    "eslint-plugin-jsdoc": "^65.4.3",
     "playwright-bdd": "^9.2.1",
-    "typescript": "^7.0.2",
-    "zod": "^4.6.7"
+    "typescript": "~6.0.3",
+    "typescript-eslint": "^8.72.1"
   }
 }
