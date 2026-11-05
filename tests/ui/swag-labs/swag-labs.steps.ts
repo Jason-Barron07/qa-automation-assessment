@@ -10,6 +10,8 @@ import type { ISwagData } from './swag-labs.types.js';
 const data: ISwagData = testData;
 const { Given, When, Then } = createBdd(test);
 
+// #region Given
+
 Given('the login page is open', async ({ login }: IUiFixtures): Promise<void> =>
 {
     await login.open();
@@ -21,161 +23,6 @@ Given('I am logged in as a valid user', async ({ login, products, credentials }:
     await login.login(credentials.username, credentials.password);
     await expect(products.title).toHaveText(data.productsTitle);
     await expect(products.sort).toBeVisible();
-});
-
-When('I submit the login case {string}', async ({ login, credentials }: IUiFixtures, name: string): Promise<void> =>
-{
-    const entry = requiredCase(data.loginCases, name);
-    await login.login(
-        entry.username === 'use-valid-user' ? credentials.username : entry.username,
-        entry.password === 'use-valid-password' ? credentials.password : entry.password
-    );
-});
-
-Then('login is rejected for {string}', async ({ login, products }: IUiFixtures, name: string): Promise<void> =>
-{
-    await expect(login.error).toHaveText(requiredCase(data.loginCases, name).error);
-    await expect(login.submit).toBeVisible();
-    await expect(products.sort).toHaveCount(0);
-});
-
-When('I sort products by {string}', async ({ products, basket }: IUiFixtures, option: string): Promise<void> =>
-{
-    basket.products = await products.readProducts();
-    await products.sortBy(option);
-});
-
-Then('all products are correctly sorted by {string}', async ({ products, basket }: IUiFixtures, option: string): Promise<void> =>
-{
-    await expect(products.sort.locator('option')).toHaveText(Object.values(data.sorts).map((entry): string => entry.label));
-    const sort = requiredCase(data.sorts, option);
-    const direction = sort.descending ? -1 : 1;
-    await expect(products.sort).toHaveValue(option);
-    if (sort.field === 'name')
-    {
-        const expected = basket.products.map((product: IProduct): string => product.name)
-            .sort((left: string, right: string): number => direction * left.localeCompare(right));
-        await expect(products.names).toHaveText(expected);
-    }
-    else
-    {
-        const expected = basket.products.map((product: IProduct): number => product.price)
-            .sort((left: number, right: number): number => direction * (left - right));
-        await expect.poll(async (): Promise<number[]> => (await products.prices.allTextContents()).map(moneyToCents)).toEqual(expected);
-    }
-    const actual = await products.readProducts();
-    expect(actual.slice().sort(byName), 'Sorting must retain every product and its price').toEqual(basket.products.slice().sort(byName));
-});
-
-When('I add all products to the cart', async ({ products, basket }: IUiFixtures): Promise<void> =>
-{
-    basket.products = await products.readProducts();
-    expect(basket.products.length).toBeGreaterThan(0);
-    basket.total = basket.products.reduce((sum: number, product: IProduct): number => sum + product.price, 0);
-    await products.addAll();
-});
-
-Then('the cart badge counts all products', async ({ menu, basket }: IUiFixtures): Promise<void> =>
-{
-    await expect(menu.badge).toHaveText(String(basket.products.length));
-});
-
-When('I view my cart', async ({ menu }: IUiFixtures): Promise<void> =>
-{
-    await menu.openCart();
-});
-
-Then('the cart contains all products and the correct calculated total', async ({ cart, basket }: IUiFixtures): Promise<void> =>
-{
-    await expect(cart.items).toHaveCount(basket.products.length);
-    await expect(cart.quantities).toHaveText(basket.products.map((): string => '1'));
-    const actual = await cart.readProducts();
-    expect(actual.slice().sort(byName)).toEqual(basket.products.slice().sort(byName));
-    const cartTotal = actual.reduce((sum: number, product: IProduct): number => sum + product.price, 0);
-    expect(cartTotal, 'Cart line-item sum must match the inventory sum before checkout').toBe(basket.total);
-    await test.info().attach('cart-total', {
-        body: JSON.stringify({ products: actual, calculatedTotalCents: cartTotal }, null, 2),
-        contentType: 'application/json'
-    });
-});
-
-When('I submit valid checkout information', async ({ checkout }: IUiFixtures): Promise<void> =>
-{
-    await checkout.continueWith(data.checkout);
-});
-
-When('I submit checkout case {string}', async ({ checkout }: IUiFixtures, name: string): Promise<void> =>
-{
-    await checkout.continueWith(requiredCase(data.checkoutCases, name));
-});
-
-Then('checkout is rejected for {string}', async ({ checkout }: IUiFixtures, name: string): Promise<void> =>
-{
-    await expect(checkout.error).toHaveText(requiredCase(data.checkoutCases, name).error);
-    await expect(checkout.firstName).toBeVisible();
-    await expect(checkout.itemTotal).toHaveCount(0);
-});
-
-Then('the item total matches the calculated cart total and tax is displayed', async ({ checkout, cart, basket }: IUiFixtures): Promise<void> =>
-{
-    await expect(checkout.itemTotal).toBeVisible();
-    await expect(cart.items).toHaveCount(basket.products.length);
-    expect((await cart.readProducts()).slice().sort(byName)).toEqual(basket.products.slice().sort(byName));
-    const itemTotal = moneyToCents(await checkout.itemTotal.innerText());
-    expect(itemTotal).toBe(basket.total);
-    await expect(checkout.tax).toBeVisible();
-    await expect(checkout.tax).toHaveText(/^Tax: \$\d+\.\d{2}$/);
-    const tax = moneyToCents(await checkout.tax.innerText());
-    expect(tax).toBeGreaterThanOrEqual(0);
-    expect(moneyToCents(await checkout.total.innerText())).toBe(itemTotal + tax);
-});
-
-When('I confirm my purchase', async ({ checkout }: IUiFixtures): Promise<void> =>
-{
-    await checkout.finish();
-});
-
-Then('the purchase is confirmed and the cart badge is cleared', async ({ checkout, menu }: IUiFixtures): Promise<void> =>
-{
-    await expect(checkout.title).toHaveText(data.completePageTitle);
-    await expect(checkout.completeTitle).toHaveText(data.successTitle);
-    await expect(checkout.completeMessage).toHaveText(data.successMessage);
-    await expect(menu.badge).toHaveCount(0);
-});
-
-When('I return to the product catalogue', async ({ menu }: IUiFixtures): Promise<void> =>
-{
-    await menu.allItems();
-});
-
-Then('the Products page is displayed', async ({ products }: IUiFixtures): Promise<void> =>
-{
-    await expect(products.title).toHaveText(data.productsTitle);
-    await expect(products.sort).toBeVisible();
-});
-
-Then('the cart is empty', async ({ cart, menu }: IUiFixtures): Promise<void> =>
-{
-    await expect(cart.items).toHaveCount(0);
-    await expect(menu.badge).toHaveCount(0);
-});
-
-When('I sign out', async ({ menu }: IUiFixtures): Promise<void> =>
-{
-    await menu.logout();
-});
-
-Then('the Login page is displayed', async ({ login, products }: IUiFixtures): Promise<void> =>
-{
-    await expect(login.username).toBeVisible();
-    await expect(login.password).toBeVisible();
-    await expect(login.submit).toBeVisible();
-    await expect(products.title).toHaveCount(0);
-});
-
-When('I sign in with valid credentials', async ({ login, credentials }: IUiFixtures): Promise<void> =>
-{
-    await login.login(credentials.username, credentials.password);
 });
 
 Given('my cart contains all available products', async ({ login, products, cart, checkout, menu, credentials, basket }: IUiFixtures): Promise<void> =>
@@ -207,6 +54,173 @@ Given('I am viewing my empty cart after a purchase', async ({ login, products, c
 {
     await preparePostPurchaseCart({ login, products, cart, checkout, menu, credentials, basket });
 });
+
+// #endregion
+
+// #region When
+
+When('I submit the login case {string}', async ({ login, credentials }: IUiFixtures, name: string): Promise<void> =>
+{
+    const entry = requiredCase(data.loginCases, name);
+    await login.login(
+        entry.username === 'use-valid-user' ? credentials.username : entry.username,
+        entry.password === 'use-valid-password' ? credentials.password : entry.password
+    );
+});
+
+When('I sort products by {string}', async ({ products, basket }: IUiFixtures, option: string): Promise<void> =>
+{
+    basket.products = await products.readProducts();
+    await products.sortBy(option);
+});
+
+When('I add all products to the cart', async ({ products, basket }: IUiFixtures): Promise<void> =>
+{
+    basket.products = await products.readProducts();
+    expect(basket.products.length).toBeGreaterThan(0);
+    basket.total = basket.products.reduce((sum: number, product: IProduct): number => sum + product.price, 0);
+    await products.addAll();
+});
+
+When('I view my cart', async ({ menu }: IUiFixtures): Promise<void> =>
+{
+    await menu.openCart();
+});
+
+When('I submit valid checkout information', async ({ checkout }: IUiFixtures): Promise<void> =>
+{
+    await checkout.continueWith(data.checkout);
+});
+
+When('I submit checkout case {string}', async ({ checkout }: IUiFixtures, name: string): Promise<void> =>
+{
+    await checkout.continueWith(requiredCase(data.checkoutCases, name));
+});
+
+When('I confirm my purchase', async ({ checkout }: IUiFixtures): Promise<void> =>
+{
+    await checkout.finish();
+});
+
+When('I return to the product catalogue', async ({ menu }: IUiFixtures): Promise<void> =>
+{
+    await menu.allItems();
+});
+
+When('I sign out', async ({ menu }: IUiFixtures): Promise<void> =>
+{
+    await menu.logout();
+});
+
+When('I sign in with valid credentials', async ({ login, credentials }: IUiFixtures): Promise<void> =>
+{
+    await login.login(credentials.username, credentials.password);
+});
+
+// #endregion
+
+// #region Then
+
+Then('login is rejected for {string}', async ({ login, products }: IUiFixtures, name: string): Promise<void> =>
+{
+    await expect(login.error).toHaveText(requiredCase(data.loginCases, name).error);
+    await expect(login.submit).toBeVisible();
+    await expect(products.sort).toHaveCount(0);
+});
+
+Then('all products are correctly sorted by {string}', async ({ products, basket }: IUiFixtures, option: string): Promise<void> =>
+{
+    await expect(products.sort.locator('option')).toHaveText(Object.values(data.sorts).map((entry): string => entry.label));
+    const sort = requiredCase(data.sorts, option);
+    const direction = sort.descending ? -1 : 1;
+    await expect(products.sort).toHaveValue(option);
+    if (sort.field === 'name')
+    {
+        const expected = basket.products.map((product: IProduct): string => product.name)
+            .sort((left: string, right: string): number => direction * left.localeCompare(right));
+        await expect(products.names).toHaveText(expected);
+    }
+    else
+    {
+        const expected = basket.products.map((product: IProduct): number => product.price)
+            .sort((left: number, right: number): number => direction * (left - right));
+        await expect.poll(async (): Promise<number[]> => (await products.prices.allTextContents()).map(moneyToCents)).toEqual(expected);
+    }
+    const actual = await products.readProducts();
+    expect(actual.slice().sort(byName), 'Sorting must retain every product and its price').toEqual(basket.products.slice().sort(byName));
+});
+
+Then('the cart badge counts all products', async ({ menu, basket }: IUiFixtures): Promise<void> =>
+{
+    await expect(menu.badge).toHaveText(String(basket.products.length));
+});
+
+Then('the cart contains all products and the correct calculated total', async ({ cart, basket }: IUiFixtures): Promise<void> =>
+{
+    await expect(cart.items).toHaveCount(basket.products.length);
+    await expect(cart.quantities).toHaveText(basket.products.map((): string => '1'));
+    const actual = await cart.readProducts();
+    expect(actual.slice().sort(byName)).toEqual(basket.products.slice().sort(byName));
+    const cartTotal = actual.reduce((sum: number, product: IProduct): number => sum + product.price, 0);
+    expect(cartTotal, 'Cart line-item sum must match the inventory sum before checkout').toBe(basket.total);
+    await test.info().attach('cart-total', {
+        body: JSON.stringify({ products: actual, calculatedTotalCents: cartTotal }, null, 2),
+        contentType: 'application/json'
+    });
+});
+
+Then('checkout is rejected for {string}', async ({ checkout }: IUiFixtures, name: string): Promise<void> =>
+{
+    await expect(checkout.error).toHaveText(requiredCase(data.checkoutCases, name).error);
+    await expect(checkout.firstName).toBeVisible();
+    await expect(checkout.itemTotal).toHaveCount(0);
+});
+
+Then('the item total matches the calculated cart total and tax is displayed', async ({ checkout, cart, basket }: IUiFixtures): Promise<void> =>
+{
+    await expect(checkout.itemTotal).toBeVisible();
+    await expect(cart.items).toHaveCount(basket.products.length);
+    expect((await cart.readProducts()).slice().sort(byName)).toEqual(basket.products.slice().sort(byName));
+    const itemTotal = moneyToCents(await checkout.itemTotal.innerText());
+    expect(itemTotal).toBe(basket.total);
+    await expect(checkout.tax).toBeVisible();
+    await expect(checkout.tax).toHaveText(/^Tax: \$\d+\.\d{2}$/);
+    const tax = moneyToCents(await checkout.tax.innerText());
+    expect(tax).toBeGreaterThanOrEqual(0);
+    expect(moneyToCents(await checkout.total.innerText())).toBe(itemTotal + tax);
+});
+
+Then('the purchase is confirmed and the cart badge is cleared', async ({ checkout, menu }: IUiFixtures): Promise<void> =>
+{
+    await expect(checkout.title).toHaveText(data.completePageTitle);
+    await expect(checkout.completeTitle).toHaveText(data.successTitle);
+    await expect(checkout.completeMessage).toHaveText(data.successMessage);
+    await expect(menu.badge).toHaveCount(0);
+});
+
+Then('the Products page is displayed', async ({ products }: IUiFixtures): Promise<void> =>
+{
+    await expect(products.title).toHaveText(data.productsTitle);
+    await expect(products.sort).toBeVisible();
+});
+
+Then('the cart is empty', async ({ cart, menu }: IUiFixtures): Promise<void> =>
+{
+    await expect(cart.items).toHaveCount(0);
+    await expect(menu.badge).toHaveCount(0);
+});
+
+Then('the Login page is displayed', async ({ login, products }: IUiFixtures): Promise<void> =>
+{
+    await expect(login.username).toBeVisible();
+    await expect(login.password).toBeVisible();
+    await expect(login.submit).toBeVisible();
+    await expect(products.title).toHaveCount(0);
+});
+
+// #endregion
+
+// #region Helper functions
 
 function requiredCase<T>(cases: Record<string, T>, name: string): T
 {
@@ -268,3 +282,5 @@ async function preparePostPurchaseCart(context: IUiFixtures): Promise<void>
     await prepareReturnedCatalogue(context);
     await context.menu.openCart();
 }
+
+// #endregion
