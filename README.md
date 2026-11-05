@@ -46,7 +46,7 @@ npm run test:ui
 | Run with the browser visible | `npm run test:ui -- --headed` |
 | Run sorting scenarios | `npm run test:ui -- --grep "Sort all products"` |
 | Run rejection scenarios | `npm run test:ui -- --grep "Reject"` |
-| Run requirement 11 | `npm run test:ui -- --grep "11\. Purchase completion"` |
+| Run requirement 11 | `npm run test:ui -- --grep "Purchase completion"` |
 | Run purchase confirmation | `npm run test:ui -- --grep "Complete a purchase"` |
 | Open the latest HTML report | `npm run report` |
 | Regenerate BDD specs only | `npm run bddgen` |
@@ -58,8 +58,6 @@ The 22 independent scenarios cover valid login, five invalid-login cases, all fo
 Every scenario has one Given, one When, and one Then. There are no tags or Examples tables. Each scenario starts in a fresh browser context and establishes its own prerequisites through page objects.
 
 The cart does not display a subtotal. Its line-item sum is checked before checkout and compared with the item total on the checkout overview. Money calculations use integer cents, and the tests do not assume a tax rate or fixed inventory total.
-
-See [requirement coverage](docs/task-4-test-plan.md), [BDD conventions](docs/task-4-bdd-alignment.md), and [recorded execution results](docs/task-4-execution-summary.md).
 
 ## Project structure
 
@@ -77,7 +75,9 @@ tests/
   checkout/         Information, negative cases, item total, tax (7-10)
   E2E/              Purchase completion and post-purchase checks (11)
   shared/           Given/When/Then steps, JSON data, and feature types
-docs/              Coverage, execution evidence, and Postman collection
+docs/              Written assessment answers and evidence
+Postman collection - Cat API/
+                   Final Postman collection and API screenshots
 .vscode/           TypeScript and Cucumber editor configuration
 ```
 
@@ -93,7 +93,17 @@ Do not edit `.features-gen/` directly; it is regenerated and ignored by Git.
 
 Reports are generated locally, ignored by Git, and replaced by later runs. Open a failure trace from the HTML report or use `npx playwright show-trace "path/to/trace.zip"`.
 
-Task 3 material remains in `docs/reference/cat-facts.postman_collection.json` and `Postman collection - Cat API/`. No Cat Facts automation runs in this repository.
+## Task 3: Run the Postman tests
+
+Import the [final Cat Facts API collection](<Postman collection - Cat API/Cat Facts API.postman_collection.json>). It contains three example requests (`/breeds`, `/fact`, and `/facts`) with 13 JavaScript assertions in their post-response scripts. Use this JSON file for the Task 3b submission.
+
+1. Open Postman, select **Import**, and choose `Postman collection - Cat API/Cat Facts API.postman_collection.json` from this repository.
+2. Confirm the collection variable `max_length` is `140`. No separate environment file is required; the requests use `https://catfact.ninja`.
+3. Confirm `limit=1` is enabled for `/breeds` and `/facts`, and `max_length={{max_length}}` is enabled for `/fact` and `/facts`. Keep the `Accept: application/json` header.
+4. Open the collection's **Run** action, select all three requests, and run one iteration.
+5. Review the results. A successful run shows **13 passed assertions and 0 failures**. Investigate any failures using the response body and test results.
+
+API screenshots are stored alongside the collection. The Playwright commands above run only Task 4 UI tests; run the API collection separately in Postman.
 
 ## Troubleshooting
 
