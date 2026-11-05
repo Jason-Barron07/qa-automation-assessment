@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig([
     {
-        ignores: ['node_modules/**', '.features-gen/**', 'playwright-report/**', 'test-results/**', 'junit-report/**', 'blob-report/**', 'tmp/**']
+        ignores: ['node_modules/**', '.features-gen/**', 'playwright-report/**', 'test-results/**', 'blob-report/**', 'tmp/**']
     },
     {
         files: ['**/*.js'],

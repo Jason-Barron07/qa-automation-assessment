@@ -1,4 +1,4 @@
-import type { ICheckoutDetails } from '../../../src/pages/shop.types.js';
+import type { ICheckoutDetails } from '../../src/pages/shop.types.js';
 
 export interface ILoginCase
 {
@@ -9,6 +9,7 @@ export interface ILoginCase
 
 export interface ISortCase
 {
+    option: string;
     label: string;
     field: string;
     descending: boolean;
@@ -22,6 +23,7 @@ export interface ICheckoutCase extends ICheckoutDetails
 export interface ISwagData
 {
     productsTitle: string;
+    overviewTitle: string;
     completePageTitle: string;
     successTitle: string;
     successMessage: string;

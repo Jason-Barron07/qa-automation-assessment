@@ -1,6 +1,10 @@
 {
   "typescript.tsdk": "node_modules/typescript/lib",
   "typescript.enablePromptUseWorkspaceTsdk": true,
-  "cucumber.features": ["tests/ui/**/*.feature"],
-  "cucumber.glue": ["tests/ui/**/*.steps.ts"]
+  "cucumber.features": [
+    "tests/**/*.feature"
+  ],
+  "cucumber.glue": [
+    "tests/**/*.steps.ts"
+  ]
 }

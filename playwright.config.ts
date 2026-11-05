@@ -5,8 +5,8 @@ import { getEnvironmentSettings } from './src/config/environment.js';
 const settings = getEnvironmentSettings();
 
 const uiTestDir = defineBddConfig({
-    features: 'tests/ui/**/*.feature',
-    steps: ['tests/ui/**/*.steps.ts', 'src/fixtures/ui.fixture.ts'],
+    features: 'tests/**/*.feature',
+    steps: ['tests/**/*.steps.ts', 'src/fixtures/ui.fixture.ts'],
     outputDir: '.features-gen/ui'
 });
 

@@ -9,72 +9,77 @@
     "postalCode": "8001"
   },
   "loginCases": {
-    "unknown-user": {
+    "Reject login with an unknown user": {
       "username": "unknown_assessment_user",
       "password": "use-valid-password",
       "error": "Epic sadface: Username and password do not match any user in this service"
     },
-    "wrong-password": {
+    "Reject login with an incorrect password": {
       "username": "use-valid-user",
       "password": "incorrect_password",
       "error": "Epic sadface: Username and password do not match any user in this service"
     },
-    "locked-user": {
+    "Reject login with a locked account": {
       "username": "locked_out_user",
       "password": "use-valid-password",
       "error": "Epic sadface: Sorry, this user has been locked out."
     },
-    "missing-username": {
+    "Reject login without a username": {
       "username": "",
       "password": "use-valid-password",
       "error": "Epic sadface: Username is required"
     },
-    "missing-password": {
+    "Reject login without a password": {
       "username": "use-valid-user",
       "password": "",
       "error": "Epic sadface: Password is required"
     }
   },
   "sorts": {
-    "az": {
+    "Sort all products by name from A to Z": {
+      "option": "az",
       "label": "Name (A to Z)",
       "field": "name",
       "descending": false
     },
-    "za": {
+    "Sort all products by name from Z to A": {
+      "option": "za",
       "label": "Name (Z to A)",
       "field": "name",
       "descending": true
     },
-    "lohi": {
+    "Sort all products by price from low to high": {
+      "option": "lohi",
       "label": "Price (low to high)",
       "field": "price",
       "descending": false
     },
-    "hilo": {
+    "Sort all products by price from high to low": {
+      "option": "hilo",
       "label": "Price (high to low)",
       "field": "price",
       "descending": true
     }
   },
   "checkoutCases": {
-    "missing-first-name": {
+    "Reject checkout without a first name": {
       "firstName": "",
       "lastName": "Shopper",
       "postalCode": "8001",
       "error": "Error: First Name is required"
     },
-    "missing-last-name": {
+    "Reject checkout without a last name": {
       "firstName": "Test",
       "lastName": "",
       "postalCode": "8001",
       "error": "Error: Last Name is required"
     },
-    "missing-postal-code": {
+    "Reject checkout without a postal code": {
       "firstName": "Test",
       "lastName": "Shopper",
       "postalCode": "",
       "error": "Error: Postal Code is required"
     }
-  }
+  },
+  "overviewTitle": "Checkout: Overview"
 }
